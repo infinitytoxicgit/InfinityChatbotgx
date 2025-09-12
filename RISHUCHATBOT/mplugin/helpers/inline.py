@@ -16,7 +16,7 @@ DEV_OP = [
     [
         InlineKeyboardButton(
             text="❍ 𝐀ᴅᴅ 𝐌ᴇ 𝐘ᴏᴜʀ 𝐆ʀᴏᴜᴘ ❍",
-            url=f"https://t.me/{Darkchatv1_probot.username}?startgroup=true",
+                        url=f"https://t.me/{RISHUCHATBOT.username}?startgroup=true",
         ),
     ],
     [
