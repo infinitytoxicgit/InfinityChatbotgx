@@ -96,7 +96,7 @@ async def bot_sys_stats():
     RAM = f"{mem}%"
     DISK = f"{disk}%"
     return UP, CPU, RAM, DISK
-    
+
 
 async def set_default_status(chat_id):
     try:
@@ -132,7 +132,7 @@ async def welcomejej(client, message: Message):
                     link = f"[ɢᴇᴛ ʟɪɴᴋ]({invitelink})"
                 except ChatAdminRequired:
                     link = "No Link"
-                
+
                 try:
                     groups_photo = await client.download_media(
                         chat.photo.big_file_id, file_name=f"chatpp{chat.id}.png"
@@ -161,7 +161,7 @@ async def welcomejej(client, message: Message):
                 try:
                     bot_id = client.me.id
                     owner_id = await get_clone_owner(bot_id)
-                    
+
                     if owner_id:
                         await client.send_photo(
                             int(owner_id),
@@ -261,12 +261,12 @@ async def start(client: Client, m: Message):
     bot_id = client.me.id
     users = len(await get_served_cusers(bot_id))
     chats = len(await get_served_cchats(bot_id))
-    
+
     if m.chat.type == ChatType.PRIVATE:
         accha = await m.reply_text(
             text=random.choice(EMOJIOS),
         )
-        
+
         animation_steps = [
             "⚡ᴅ", "⚡ᴅι", "⚡ᴅιи", "⚡ᴅιиg", "⚡ᴅιиg ᴅ", "⚡ᴅιиg ᴅσ", "⚡ᴅιиg ᴅσи", "⚡ᴅιиg ᴅσиg", "⚡ᴅιиg ᴅσиg ꨄ︎", "⚡sᴛαятɪɴɢ..."
         ]
@@ -276,7 +276,7 @@ async def start(client: Client, m: Message):
             await asyncio.sleep(0.01)
 
         await accha.delete()
-        
+
         umm = await m.reply_sticker(sticker=random.choice(STICKER))
         chat_photo = BOT  
         if m.chat.photo:
@@ -292,12 +292,11 @@ async def start(client: Client, m: Message):
         chats = len(await get_served_cchats(bot_id))
         UP, CPU, RAM, DISK = await bot_sys_stats()
         await m.reply_photo(photo=chat_photo, caption=START.format(users, chats, UP), reply_markup=InlineKeyboardMarkup(START_BOT))
-        
+
         await add_served_cuser(bot_id, m.chat.id) 
         await add_served_user(m.chat.id)
-        keyboard = InlineKeyboardMarkup([[
-    InlineKeyboardButton(f"{m.chat.first_name}", url=f"https://t.me/{m.chat.username}")
-]])
+        keyboard = InlineKeyboardMarkup([[InlineKeyboardButton(f"{m.chat.first_name}", user_id=m.chat.id)]])
+
         owner_id = await get_clone_owner(bot_id) 
         if owner_id:
             await client.send_photo(
@@ -306,7 +305,7 @@ async def start(client: Client, m: Message):
                 caption=f"{m.from_user.mention} ʜᴀs sᴛᴀʀᴛᴇᴅ ʙᴏᴛ. \n\n**ɴᴀᴍᴇ :** {m.chat.first_name}\n**ᴜsᴇʀɴᴀᴍᴇ :** @{m.chat.username}\n**ɪᴅ :** {m.chat.id}\n\n**ᴛᴏᴛᴀʟ ᴜsᴇʀs :** {users}",
                 reply_markup=keyboard
             )
-        
+
     else:
         await m.reply_photo(
             photo=random.choice(IMG),
@@ -359,7 +358,7 @@ async def ping(client: Client, message: Message):
 
     ms = (datetime.now() - start).microseconds / 1000
     await loda.edit_text(
-        text=f"нey вαву!!\n{(await client.get_me()).mention} ᴄʜᴀᴛʙᴏᴛ ιѕ alιve  αnd worĸιng ғιne wιтн a pιng oғ\n\n**➥** `{ms}` ms\n**➲ ᴄᴘᴜ:** {CPU}\n**➲ ʀᴀᴍ:** {RAM}\n**➲ ᴅɪsᴋ:** {DISK}\n**➲ ᴜᴘᴛɪᴍᴇ »** {UP}\n\n<b>||**⋆ʟᴏᴠᴇ ᴡɪᴛʜ⋆ [  ꯭꯭↬꯭ᬃ꯭ ⃪꯭ ꯭⁢⁣⁤⁣⁣⁢⁣⁤⁢⁤⁣⁢⁤⁣⁤᪳᪳ɢx ᴅᴀʀᴋ ʙᴏᴛs ꯭꯭༗꯭»꯭݅݅݅݅𓆪 ](https://t.me/{OWNER_USERNAME}) **||</b>",
+        text=f"нey вαву!!\n{(await client.get_me()).mention} ᴄʜᴀᴛʙᴏᴛ ιѕ alιve  αnd worĸιng ғιne wιтн a pιng oғ\n\n**➥** `{ms}` ms\n**➲ ᴄᴘᴜ:** {CPU}\n**➲ ʀᴀᴍ:** {RAM}\n**➲ ᴅɪsᴋ:** {DISK}\n**➲ ᴜᴘᴛɪᴍᴇ »** {UP}\n\n<b>||**⋆ʟᴏᴠᴇ ᴡɪᴛʜ⋆ [ 🎧 ɢx ᴅᴀʀᴋ ʙᴏᴛs ⚙️ ](https://t.me/{OWNER_USERNAME}) **||</b>",
         reply_markup=InlineKeyboardMarkup(PNG_BTN),
     )
     if message.chat.type == ChatType.PRIVATE:
@@ -375,7 +374,7 @@ async def stats(cli: Client, message: Message):
     bot_id = (await cli.get_me()).id
     users = len(await get_served_cusers(bot_id))
     chats = len(await get_served_cchats(bot_id))
-    
+
     await message.reply_text(
         f"""{(await cli.get_me()).mention} Chatbot Stats:
 
@@ -455,7 +454,7 @@ async def broadcast_message(client, message):
     if not await is_owner(bot_id, user_id):
         await message.reply_text("You don't have permission to use this command on this bot.")
         return
-        
+
     async with broadcast_lock:
         if IS_BROADCASTING:
             return await message.reply_text(
@@ -486,7 +485,7 @@ async def broadcast_message(client, message):
                     return await message.reply_text(
                         "**Please provide text after the command or reply to a message for broadcasting.**"
                     )
-                
+
                 flags = {
                     "-pin": "-pin" in query,
                     "-pinloud": "-pinloud" in query,
@@ -502,10 +501,10 @@ async def broadcast_message(client, message):
                         "Please provide a valid text message or a flag: -pin, -nogroup, -pinloud, -user"
                     )
 
-                
+
                 broadcast_content = query
                 broadcast_type = "text"
-            
+
 
             await message.reply_text("**Started broadcasting...**")
 
@@ -550,7 +549,7 @@ async def broadcast_message(client, message):
                             continue
                         await asyncio.sleep(flood_time)
                     except Exception as e:
-                        
+
                         continue
 
                 await message.reply_text(
@@ -586,7 +585,7 @@ async def broadcast_message(client, message):
                             continue
                         await asyncio.sleep(flood_time)
                     except Exception as e:
-                        
+
                         continue
 
                 await message.reply_text(f"**Broadcasted to {susr} users.**")
@@ -595,4 +594,3 @@ async def broadcast_message(client, message):
             IS_BROADCASTING = False
 
 
-    
