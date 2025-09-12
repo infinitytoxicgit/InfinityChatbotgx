@@ -15,4 +15,4 @@ getenv("mongodb+srv://knight4563:knight4563@cluster0.a5br0se.mongodb.net/?retryW
 OWNER_ID = int(getenv("OWNER_ID", "7487670897"))
 SUPPORT_GRP = "https://t.me/+zyocLmf3JvIwOWY9"
 UPDATE_CHNL = "@dark_x_knight_musiczz_support"
-OWNER_USERNAME = "DarkGamer7t2rI"
+OWNER_USERNAME = "@DarkGamer7t2rI"
