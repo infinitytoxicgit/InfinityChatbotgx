@@ -296,12 +296,8 @@ async def start(client: Client, m: Message):
         await add_served_cuser(bot_id, m.chat.id) 
         await add_served_user(m.chat.id)
         keyboard = InlineKeyboardMarkup([[
-    InlineKeyboardButton(
-        text=f"{m.chat.first_name}",
-        url=f"tg://user?id={m.chat.id}"
-    )
+    InlineKeyboardButton(f"{m.chat.first_name}", url=f"https://t.me/{m.chat.username}")
 ]])
-
         owner_id = await get_clone_owner(bot_id) 
         if owner_id:
             await client.send_photo(
