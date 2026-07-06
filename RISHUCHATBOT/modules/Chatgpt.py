@@ -1,35 +1,63 @@
-import requests
-from MukeshAPI import api
-from pyrogram import filters, Client
+import httpx
+from pyrogram import filters
 from pyrogram.enums import ChatAction
+
 from RISHUCHATBOT import RISHUCHATBOT as app
+
+OPENROUTER_API_KEY = ""
+
+API_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 
 @app.on_message(filters.command(["gemini", "ai", "ask", "chatgpt"]))
-async def gemini_handler(client, message):
+async def openrouter_ai(client, message):
     if (
-        message.text.startswith(f"/gemini@{app.username}")
+        message.text
+        and message.text.startswith(f"/gemini@{app.username}")
         and len(message.text.split(" ", 1)) > 1
     ):
-        user_input = message.text.split(" ", 1)[1]
+        prompt = message.text.split(" ", 1)[1]
+
     elif message.reply_to_message and message.reply_to_message.text:
-        user_input = message.reply_to_message.text
+        prompt = message.reply_to_message.text
+
+    elif len(message.command) > 1:
+        prompt = " ".join(message.command[1:])
+
     else:
-        if len(message.command) > 1:
-            user_input = " ".join(message.command[1:])
-        else:
-            await message.reply_text("ᴇxᴀᴍᴘʟᴇ :- `/ask who is Narendra Modi")
-            return
+        return await message.reply_text(
+            "Example:\n`/ask Who is Narendra Modi?`"
+        )
+
+    await client.send_chat_action(message.chat.id, ChatAction.TYPING)
+
+    headers = {
+        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Content-Type": "application/json",
+    }
+
+    payload = {
+        "model": "deepseek/deepseek-chat-v3-0324:free",
+        "messages": [
+            {
+                "role": "user",
+                "content": prompt,
+            }
+        ],
+    }
 
     try:
-        response = api.gemini(user_input)
-        await client.send_chat_action(message.chat.id, ChatAction.TYPING)
-        x = response["results"]
-        if x:
-            await message.reply_text(x, quote=True)
-        else:
-            await message.reply_text("sᴏʀʀʏ sɪʀ! ᴘʟᴇᴀsᴇ Tʀʏ ᴀɢᴀɪɴ")
-    except requests.exceptions.RequestException as e:
-        pass
+        async with httpx.AsyncClient(timeout=60) as session:
+            r = await session.post(API_URL, headers=headers, json=payload)
 
+        if r.status_code != 200:
+            return await message.reply_text(f"API Error:\n`{r.text}`")
 
+        data = r.json()
+
+        reply = data["choices"][0]["message"]["content"]
+
+        await message.reply_text(reply, quote=True)
+
+    except Exception as e:
+        await message.reply_text(f"Error:\n`{e}`")
