@@ -15,7 +15,7 @@ START = """**
 
 
 ╔═══⋆ʟᴏᴠᴇ ᴡɪᴛʜ⋆═══╗
-★[↬꯭ᬃ꯭ ⃪꯭ ꯭⁢⁣⁤⁣⁣⁢⁣⁤⁢⁤⁣⁢⁤⁣⁤᪳᪳DARK BOTS [🇮🇳] ꯭꯭༗꯭»꯭݅݅݅݅𓆪](https://t.me/dark_x_knight_musiczz_support)
+𝙆𝙞𝙮𝙤𝙢𝙞 𓆩ꨄ︎𓆪(https://t.me/+xbiKouVo7xBmMTNi)
 ╚═════ ⋆★⋆ ═════╝
 **"""
 
@@ -46,7 +46,7 @@ TOOLS_DATA_READ = f"""**
 
 
 ╔═══⋆ʟᴏᴠᴇ ᴡɪᴛʜ⋆═══╗
-★[↬꯭ᬃ꯭ ⃪꯭ ꯭⁢⁣⁤⁣⁣⁢⁣⁤⁢⁤⁣⁢⁤⁣⁤᪳᪳DARK BOTS [🇮🇳] ꯭꯭༗꯭»꯭݅݅݅݅𓆪](https://t.me/dark_x_knight_musiczz_support)
+𝙆𝙞𝙮𝙤𝙢𝙞 𓆩ꨄ︎𓆪(https://t.me/+xbiKouVo7xBmMTNi)
 ╚═════ ⋆★⋆ ═════╝ **
 """
 
@@ -74,11 +74,11 @@ CHATBOT_READ = f"""**
 
 
 ╔═══⋆ʟᴏᴠᴇ ᴡɪᴛʜ⋆═══╗
-★[↬꯭ᬃ꯭ ⃪꯭ ꯭⁢⁣⁤⁣⁣⁢⁣⁤⁢⁤⁣⁢⁤⁣⁤᪳᪳DARK BOTS [🇮🇳] ꯭꯭༗꯭»꯭݅݅݅݅𓆪](https://t.me/dark_x_knight_musiczz_support)
+𝙆𝙞𝙮𝙤𝙢𝙞 𓆩ꨄ︎𓆪(https://t.me/+xbiKouVo7xBmMTNi)
 ╚═════ ⋆★⋆ ═════╝**
 """
 
-SOURCE_READ = f"**❍ ʜᴇʏ, ᴛʜᴇ [{RISHUCHATBOT.name}](https://t.me/{RISHUCHATBOT.username}) ɪs ɴᴇᴡ ᴘᴏᴡᴇʀғᴜʟʟ ᴄʜᴀᴛʙᴏᴛ ᴏғ ᴡʜᴏʟᴇ ᴛᴇʟᴇɢʀᴀᴍ.**\n\n**❍ ᴘʟᴇᴀsᴇ ᴅᴏɴᴀᴛᴇ ᴛʜᴇ ᴅᴇᴠʟᴏᴘᴇʀ ᴛᴏ ᴍᴀɪɴᴛᴀɪɴ ᴛʜᴇ ᴘʀᴏɪᴇᴄᴛs**\n\n**⦿──────────────────⦿**\n\n**❍ ʜᴇʀᴇ ɪs ᴛʜᴇ ǫʀ [ᴅᴏɴᴀᴛᴇ ʜᴇʀᴇ](https://t.me/dark_x_knight_musiczz_supoort)**\n\n**⦿──────────────────⦿**\n\n**❍ɪғ ʏᴏᴜ ғᴀᴄᴇ ᴀɴʏ ᴘʀᴏʙʟᴇᴍ ᴛʜᴇɴ ᴄᴏɴᴛᴀᴄᴛ ᴀᴛ [sᴜᴘᴘᴏʀᴛ ᴄʜᴀᴛ](https://t.me/{SUPPORT_GRP})..\n\n<b>||❍ ʟᴏᴠᴇ ᴡɪᴛʜ ➪ [↬꯭ᬃ꯭ ⃪꯭ ꯭⁢⁣⁤⁣⁣⁢⁣⁤⁢⁤⁣⁢⁤⁣⁤᪳᪳DARK BOTS [🇮🇳] ꯭꯭༗꯭»꯭݅݅݅݅𓆪](https://t.me/dark_x_knight_musiczz_supoort) **||</b>"
+SOURCE_READ = f"**❍ ʜᴇʏ, ᴛʜᴇ [{RISHUCHATBOT.name}](https://t.me/{RISHUCHATBOT.username}) ɪs ɴᴇᴡ ᴘᴏᴡᴇʀғᴜʟʟ ᴄʜᴀᴛʙᴏᴛ ᴏғ ᴡʜᴏʟᴇ ᴛᴇʟᴇɢʀᴀᴍ.**\n\n**❍ ᴘʟᴇᴀsᴇ ᴅᴏɴᴀᴛᴇ ᴛʜᴇ ᴅᴇᴠʟᴏᴘᴇʀ ᴛᴏ ᴍᴀɪɴᴛᴀɪɴ ᴛʜᴇ ᴘʀᴏɪᴇᴄᴛs**\n\n**⦿──────────────────⦿**\n\n**❍ ʜᴇʀᴇ ɪs ᴛʜᴇ ǫʀ [ᴅᴏɴᴀᴛᴇ ʜᴇʀᴇ](https://t.me/Roohi_Queen_Bot?start=_tgr_yN-6yUs4ZmRh)**\n\n**⦿──────────────────⦿**\n\n**❍ɪғ ʏᴏᴜ ғᴀᴄᴇ ᴀɴʏ ᴘʀᴏʙʟᴇᴍ ᴛʜᴇɴ ᴄᴏɴᴛᴀᴄᴛ ᴀᴛ [sᴜᴘᴘᴏʀᴛ ᴄʜᴀᴛ](https://t.me/{SUPPORT_GRP})..\n\n<b>||❍ ʟᴏᴠᴇ ᴡɪᴛʜ ➪ 𝙆𝙞𝙮𝙤𝙢𝙞 𓆩ꨄ︎𓆪(https://t.me/Roohi_Soul) **||</b>"
 
 ADMIN_READ = f"sᴏᴏɴ"
 
