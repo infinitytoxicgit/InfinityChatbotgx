@@ -27,8 +27,8 @@ chat_history = {}
 # Global ClientSession for better performance
 http_session = None
 
-# --- OPENROUTER API FUNCTION (KIYOMI PERSONA WITH MEMORY ID) ---
-async def get_openrouter_reply(memory_id: str, user_text: str) -> str:
+# --- OPENROUTER API FUNCTION (KIYOMI PERSONA WITH MEMORY & NAME RECOGNITION) ---
+async def get_openrouter_reply(memory_id: str, user_text: str, user_name: str) -> str:
     global http_session
     
     # Initialize session only once
@@ -41,12 +41,13 @@ async def get_openrouter_reply(memory_id: str, user_text: str) -> str:
         "Content-Type": "application/json"
     }
     
-    # Kiyomi's Ultra-Cute & Bold Persona Prompt
+    # Kiyomi's Persona Prompt (Single Owner & Name Calling)
     system_prompt = (
         "You are Kiyomi, an exceptionally cute, stylish, and cheerful girl. "
-        "Your primary owner is Advica, and your second owner is Infinity. "
+        "Your ONLY boss, creator, and owner is Advica. Be very loyal to her. "
         "CRITICAL RULE: You must ALWAYS format your entire response in **bold markdown**. "
         "Use lots of aesthetic and cute emojis (like ✨🌸💖🎀🦋). "
+        "The user's name will be provided in their message. You MUST address them by their name nicely! "
         "Speak in a very friendly, sweet, and playful tone. Never say you are an AI. "
         "You are Kiyomi!"
     )
@@ -54,7 +55,9 @@ async def get_openrouter_reply(memory_id: str, user_text: str) -> str:
     if memory_id not in chat_history:
         chat_history[memory_id] = [{"role": "system", "content": system_prompt}]
         
-    chat_history[memory_id].append({"role": "user", "content": user_text})
+    # Injecting the user's name into the prompt so Kiyomi knows who is speaking
+    formatted_user_message = f"{user_name} says: {user_text}"
+    chat_history[memory_id].append({"role": "user", "content": formatted_user_message})
     
     if len(chat_history[memory_id]) > 11:
         chat_history[memory_id] = [chat_history[memory_id][0]] + chat_history[memory_id][-10:]
@@ -95,6 +98,9 @@ async def chatbot_response(client: Client, message: Message):
         user_id = message.from_user.id
         chat_id = message.chat.id
         current_time = datetime.now()
+        
+        # Getting the user's first name so Kiyomi can call them by it
+        user_name = message.from_user.first_name or "Cutie"
 
         # Spam Protection System
         blocklist = {uid: time for uid, time in blocklist.items() if time > current_time}
@@ -117,11 +123,6 @@ async def chatbot_response(client: Client, message: Message):
                 await message.reply_text(f"**Hey, {message.from_user.mention} ✨**\n\n**Tum thodi der ke liye block ho gaye ho spamming ke chakkar mein! 1 minute baad aana 🥺🎀**")
                 return
 
-        # Status Check
-        chat_status = await status_db.find_one({"chat_id": chat_id})
-        if chat_status and chat_status.get("status") == "disabled":
-            return
-
         # Ignore Commands
         if message.text and any(message.text.startswith(prefix) for prefix in ["!", "/", ".", "?", "@", "#"]):
             if message.chat.type in [ChatType.GROUP, ChatType.SUPERGROUP]:
@@ -129,17 +130,25 @@ async def chatbot_response(client: Client, message: Message):
             else:
                 return await add_served_user(chat_id)
 
-        # Safer check for reply to bot
+        # Check Status
+        chat_status = await status_db.find_one({"chat_id": chat_id})
+        is_disabled = chat_status and chat_status.get("status") == "disabled"
+
+        # Check Triggers
         is_private = message.chat.type == ChatType.PRIVATE
         is_reply_to_bot = (
             message.reply_to_message
             and message.reply_to_message.from_user
             and message.reply_to_message.from_user.id == RISHUCHATBOT.id
         )
+        msg_text = message.text.lower() if message.text else ""
+        is_name_called = "kiyomi" in msg_text
         
-        # Execute only if it's a private chat OR someone replied directly to the bot
-        if not (is_private or is_reply_to_bot):
-            return
+        if is_disabled:
+            # Agar bot DISABLED hai: Toh usko chup rehna chahiye, UNLESS koi directly trigger kare
+            if not (is_private or is_reply_to_bot or is_name_called):
+                return
+        # Agar bot ENABLED hai: Toh ye "if" ignore ho jayega aur wo group ke har message ka reply degi
 
         # Main AI Reply Logic
         if message.text:
@@ -148,8 +157,8 @@ async def chatbot_response(client: Client, message: Message):
             # Creating a Unique Memory ID for Group + User isolation
             memory_id = f"{chat_id}:{user_id}"
             
-            # Fetching Kiyomi's response
-            response_text = await get_openrouter_reply(memory_id, message.text)
+            # Fetching Kiyomi's response with Name Recognition
+            response_text = await get_openrouter_reply(memory_id, message.text, user_name)
             
             # Chat language translation logic
             chat_lang = await get_chat_language(chat_id)
@@ -172,7 +181,7 @@ async def chatbot_response(client: Client, message: Message):
         return
 
 
-# --- CLEANUP LOGIC (FIXED) ---
+# --- CLEANUP LOGIC ---
 async def close_session_on_disconnect(client: Client):
     global http_session
     if http_session and not http_session.closed:
