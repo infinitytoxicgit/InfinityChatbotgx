@@ -12,7 +12,7 @@ BOT_TOKEN = getenv("BOT_TOKEN", "")
 STRING1 = getenv("STRING1", "")
 MONGO_URL =
 getenv("mongodb+srv://knight4563:knight4563@cluster0.a5br0se.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0", None)
-OWNER_ID = int(getenv("OWNER_ID", "7487670897"))
-SUPPORT_GRP = "https://t.me/+zyocLmf3JvIwOWY9"
-UPDATE_CHNL = "@dark_x_knight_musiczz_support"
-OWNER_USERNAME = "@DarkGamer7t2rI"
+OWNER_ID = int(getenv("OWNER_ID", "8564072723"))
+SUPPORT_GRP = "https://t.me/+xWR1TL_g_VMzZTcy"
+UPDATE_CHNL = "@Roohi_Soul"
+OWNER_USERNAME = "@Fuck_You_In_Hell"
