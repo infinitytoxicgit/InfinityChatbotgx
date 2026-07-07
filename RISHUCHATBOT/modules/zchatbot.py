@@ -63,10 +63,10 @@ async def save_new_sticker(sticker_id: str):
         pass
 
 
-# --- OPENROUTER API FUNCTION (DYNAMIC GIRL PERSONA) ---
+# --- OPENROUTER API FUNCTION (DYNAMIC GIRL PERSONA WITH FALLBACK MODELS) ---
 async def get_openrouter_reply(memory_id: str, user_text: str, user_name: str, username: str, is_owner: bool) -> str:
     global http_session
-    
+
     if http_session is None or http_session.closed:
         http_session = aiohttp.ClientSession()
 
@@ -75,7 +75,7 @@ async def get_openrouter_reply(memory_id: str, user_text: str, user_name: str, u
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
         "Content-Type": "application/json"
     }
-    
+
     # Owner Logic Check
     if is_owner:
         owner_prompt = "OMG! You are talking to your Ultimate Boss, Creator, and Owner right now! Show him extreme loyalty, extra love, and cute affection. Let him know you recognize him! ✨"
@@ -94,34 +94,46 @@ async def get_openrouter_reply(memory_id: str, user_text: str, user_name: str, u
         f"4. The user's name is {user_name} and their username is {username}. Randomly tag them or call their name! "
         f"5. {owner_prompt}"
     )
-    
+
     if memory_id not in chat_history:
         chat_history[memory_id] = [{"role": "system", "content": system_prompt}]
-        
+
     formatted_user_message = f"[{username}] says: {user_text}"
     chat_history[memory_id].append({"role": "user", "content": formatted_user_message})
-    
+
     if len(chat_history[memory_id]) > 11:
         chat_history[memory_id] = [chat_history[memory_id][0]] + chat_history[memory_id][-10:]
-    
-    data = {
-        "model": "openrouter/free", 
-        "messages": chat_history[memory_id]
-    }
-    
-    try:
-        async with http_session.post(url, headers=headers, json=data) as response:
-            if response.status == 200:
-                result = await response.json()
-                reply = result['choices'][0]['message']['content']
-                
-                chat_history[memory_id].append({"role": "assistant", "content": reply})
-                return reply
-            else:
-                return "**Oopsie! 🥺 Mera net thoda slow chal raha hai, thodi der mein aana ✨**"
-    except Exception as e:
-        LOGGER.error(f"OpenRouter Error: {e}")
-        return "**Mera connection toot gaya 😭💔**"
+
+    # DO BEST FREE MODELS KA FALLBACK LOOP
+    models_to_try = [
+        "meta-llama/llama-3-8b-instruct:free", # Primary: Smart and fast
+        "google/gemma-2-9b-it:free"            # Secondary: Backup in case Llama is down
+    ]
+
+    for model_name in models_to_try:
+        data = {
+            "model": model_name,
+            "messages": chat_history[memory_id]
+        }
+
+        try:
+            async with http_session.post(url, headers=headers, json=data) as response:
+                if response.status == 200:
+                    result = await response.json()
+                    reply = result['choices'][0]['message']['content']
+
+                    chat_history[memory_id].append({"role": "assistant", "content": reply})
+                    return reply
+                else:
+                    LOGGER.warning(f"Model {model_name} failed with status {response.status}. Trying next...")
+                    continue # Pehla fail hua, ab doosra try karega
+        except Exception as e:
+            LOGGER.error(f"Error with model {model_name}: {e}")
+            continue # Error aaya, toh doosra try karega
+
+    # Agar dono models fail ho gaye tabhi ye message aayega
+    return "**Oopsie! 🥺 Mera net thoda slow chal raha hai, thodi der mein aana ✨**"
+
 
 async def get_chat_language(chat_id):
     chat_lang = await lang_db.find_one({"chat_id": chat_id})
@@ -131,15 +143,15 @@ async def get_chat_language(chat_id):
 @RISHUCHATBOT.on_message(filters.incoming)
 async def chatbot_response(client: Client, message: Message):
     global blocklist, message_counts
-    
+
     if not message.from_user:
         return
-        
+
     try:
         user_id = message.from_user.id
         chat_id = message.chat.id
         current_time = datetime.now()
-        
+
         user_name = message.from_user.first_name or "Cutie"
         username = f"@{message.from_user.username}" if message.from_user.username else user_name
         is_owner = (user_id == OWNER_ID)
@@ -184,7 +196,7 @@ async def chatbot_response(client: Client, message: Message):
         )
         msg_text = message.text.lower() if message.text else ""
         is_name_called = "kiyomi" in msg_text
-        
+
         if is_disabled:
             if not (is_private or is_reply_to_bot or is_name_called):
                 return
@@ -199,7 +211,7 @@ async def chatbot_response(client: Client, message: Message):
                 if is_private or is_reply_to_bot:
                     await client.send_chat_action(chat_id, ChatAction.CHOOSE_STICKER)
                     sticker_to_send = await get_random_sticker()
-                    
+
                     if sticker_to_send:
                         try:
                             # Try to send a safe sticker from DB
@@ -214,11 +226,11 @@ async def chatbot_response(client: Client, message: Message):
         # Main AI Text Reply Logic
         if message.text:
             await client.send_chat_action(chat_id, ChatAction.TYPING)
-            
+
             memory_id = f"{chat_id}:{user_id}"
-            
+
             response_text = await get_openrouter_reply(memory_id, message.text, user_name, username, is_owner)
-            
+
             chat_lang = await get_chat_language(chat_id)
             if not chat_lang or chat_lang == "nolang":
                 translated_text = response_text
@@ -226,9 +238,9 @@ async def chatbot_response(client: Client, message: Message):
                 translated_text = GoogleTranslator(source='auto', target=chat_lang).translate(response_text)
                 if not translated_text:
                     translated_text = response_text
-            
+
             await message.reply_text(translated_text)
-            
+
         else:
             if is_private or is_reply_to_bot:
                 await message.reply_text(f"**Main abhi sirf cute cute baatein padh sakti hoon {username}! ✨🎀**")
