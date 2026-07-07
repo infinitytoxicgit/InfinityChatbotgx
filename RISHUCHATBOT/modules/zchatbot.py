@@ -104,12 +104,11 @@ async def get_openrouter_reply(memory_id: str, user_text: str, user_name: str, u
     if len(chat_history[memory_id]) > 11:
         chat_history[memory_id] = [chat_history[memory_id][0]] + chat_history[memory_id][-10:]
 
-    # 4 BEST FREE MODELS KA FALLBACK LOOP
+    # 🔥 FIX: Hata diya purana dead model. Sirf Top 3 100% Working Models rakhe hain 🔥
     models_to_try = [
-        "meta-llama/llama-3-8b-instruct:free", # Primary: Smart and fast
-        "google/gemma-2-9b-it:free",           # Backup 1
-        "mistralai/mistral-7b-instruct:free",  # Backup 2
-        "microsoft/phi-3-mini-128k-instruct:free" # Backup 3
+        "meta-llama/llama-3-8b-instruct:free", 
+        "google/gemma-2-9b-it:free",           
+        "mistralai/mistral-7b-instruct:free"  
     ]
     
     last_error = "Unknown Connection Error"
@@ -129,17 +128,15 @@ async def get_openrouter_reply(memory_id: str, user_text: str, user_name: str, u
                     chat_history[memory_id].append({"role": "assistant", "content": reply})
                     return reply
                 else:
-                    # Asli error yahan catch hoga
                     err_text = await response.text()
                     LOGGER.warning(f"Model {model_name} failed. Status: {response.status}. Error: {err_text}")
                     last_error = f"Status {response.status}: {err_text[:100]}"
-                    continue # Pehla fail hua, ab doosra try karega
+                    continue 
         except Exception as e:
             LOGGER.error(f"Error with model {model_name}: {e}")
             last_error = str(e)
-            continue # Error aaya, toh doosra try karega
+            continue 
 
-    # Agar charo models fail ho gaye tabhi ye error message Telegram par aayega
     return f"**Bhai, error pakda gaya! Yeh check karo:**\n`{last_error}`\n\n**Apni config.py mein OPENROUTER_API_KEY verify karo!**"
 
 
