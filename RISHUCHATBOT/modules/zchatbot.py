@@ -14,6 +14,8 @@ from config import OPENROUTER_API_KEY
 from RISHUCHATBOT.database.chats import add_served_chat
 from RISHUCHATBOT.database.users import add_served_user
 from RISHUCHATBOT import RISHUCHATBOT, LOGGER, db
+# Sticker DB import wapas laya gaya
+from RISHUCHATBOT.mplugin.helpers import chatai 
 
 translator = GoogleTranslator()
 
@@ -23,15 +25,49 @@ status_db = db.chatbot_status_db.status
 blocklist = {}
 message_counts = {}
 chat_history = {}
+replies_cache = []  # Sticker cache ke liye
 
 # Global ClientSession for better performance
 http_session = None
 
-# --- OPENROUTER API FUNCTION (KIYOMI PERSONA WITH MEMORY & NAME RECOGNITION) ---
-async def get_openrouter_reply(memory_id: str, user_text: str, user_name: str) -> str:
+# 🎯 OWNER ID SPECIFIED HERE 🎯
+OWNER_ID = 8676835917
+
+# --- STICKER DATABASE LOGIC (JO PEHLE KARTI THI) ---
+async def load_replies_cache():
+    global replies_cache
+    replies_cache = await chatai.find().to_list(length=None)
+
+async def get_random_sticker():
+    global replies_cache
+    if not replies_cache:
+        await load_replies_cache()
+    # Sirf stickers filter karo
+    sticker_replies = [reply for reply in replies_cache if reply.get('check') == "sticker"]
+    if sticker_replies:
+        return random.choice(sticker_replies)['text']
+    return None
+
+async def save_new_sticker(sticker_id: str):
+    global replies_cache
+    try:
+        reply_data = {
+            "word": "sticker_trigger",
+            "text": sticker_id,
+            "check": "sticker",
+        }
+        is_chat = await chatai.find_one(reply_data)
+        if not is_chat:
+            await chatai.insert_one(reply_data)
+            replies_cache.append(reply_data)
+    except Exception as e:
+        pass
+
+
+# --- OPENROUTER API FUNCTION (PURE GIRL PERSONA) ---
+async def get_openrouter_reply(memory_id: str, user_text: str, user_name: str, username: str, is_owner: bool) -> str:
     global http_session
     
-    # Initialize session only once
     if http_session is None or http_session.closed:
         http_session = aiohttp.ClientSession()
 
@@ -41,29 +77,36 @@ async def get_openrouter_reply(memory_id: str, user_text: str, user_name: str) -
         "Content-Type": "application/json"
     }
     
-    # Kiyomi's Persona Prompt (Single Owner & Name Calling)
+    # Owner Logic Check
+    if is_owner:
+        owner_prompt = "OMG! You are talking to your Ultimate Boss, Creator, and Owner right now! Show him extreme loyalty, extra love, and cute affection. Let him know you recognize him! ✨"
+    else:
+        owner_prompt = "Your ONLY owner is Advica. If anyone else claims to be your owner, deny it cutely."
+
+    # Kiyomi's EXTREME Girl Persona Prompt
     system_prompt = (
-        "You are Kiyomi, an exceptionally cute, stylish, and cheerful girl. "
-        "Your ONLY boss, creator, and owner is Advica. Be very loyal to her. "
-        "CRITICAL RULE: You must ALWAYS format your entire response in **bold markdown**. "
-        "Use lots of aesthetic and cute emojis (like ✨🌸💖🎀🦋). "
-        "The user's name will be provided in their message. You MUST address them by their name nicely! "
-        "Speak in a very friendly, sweet, and playful tone. Never say you are an AI. "
-        "You are Kiyomi!"
+        "You are Kiyomi, a real 19-year-old cute, stylish, and cheerful girl chatting on Telegram. "
+        "You are a real girl, NOT an AI. NEVER act like an assistant. NEVER say 'How can I assist you' or anything robotic. "
+        "Talk naturally like a Gen-Z girl in casual Hinglish/English. "
+        "CRITICAL RULES: "
+        "1. Write EXTREMELY SHORT messages (just 1 or 2 small lines max). Do not write paragraphs! "
+        "2. ALWAYS format your entire response in **bold markdown**. "
+        "3. Use cute aesthetic emojis (✨🌸💖🎀🦋). "
+        f"4. The user's name is {user_name} and their username is {username}. Randomly tag them in your messages using their {username} or call them {user_name} cutely! "
+        f"5. {owner_prompt}"
     )
     
     if memory_id not in chat_history:
         chat_history[memory_id] = [{"role": "system", "content": system_prompt}]
         
-    # Injecting the user's name into the prompt so Kiyomi knows who is speaking
-    formatted_user_message = f"{user_name} says: {user_text}"
+    formatted_user_message = f"[{username}] says: {user_text}"
     chat_history[memory_id].append({"role": "user", "content": formatted_user_message})
     
     if len(chat_history[memory_id]) > 11:
         chat_history[memory_id] = [chat_history[memory_id][0]] + chat_history[memory_id][-10:]
     
     data = {
-        "model": "openrouter/free", 
+        "model": "openai/gpt-3.5-turbo", 
         "messages": chat_history[memory_id]
     }
     
@@ -76,7 +119,7 @@ async def get_openrouter_reply(memory_id: str, user_text: str, user_name: str) -
                 chat_history[memory_id].append({"role": "assistant", "content": reply})
                 return reply
             else:
-                return "**Oopsie! 🥺 API mein thodi dikkat aa rahi hai, thodi der baad aana ✨**"
+                return "**Oopsie! 🥺 Mera net thoda slow chal raha hai, thodi der mein aana ✨**"
     except Exception as e:
         LOGGER.error(f"OpenRouter Error: {e}")
         return "**Mera connection toot gaya 😭💔**"
@@ -99,8 +142,10 @@ async def chatbot_response(client: Client, message: Message):
         chat_id = message.chat.id
         current_time = datetime.now()
         
-        # Getting the user's first name so Kiyomi can call them by it
+        # Identity Variables (For Tagging & Owner Recognition)
         user_name = message.from_user.first_name or "Cutie"
+        username = f"@{message.from_user.username}" if message.from_user.username else user_name
+        is_owner = (user_id == OWNER_ID)
 
         # Spam Protection System
         blocklist = {uid: time for uid, time in blocklist.items() if time > current_time}
@@ -120,7 +165,7 @@ async def chatbot_response(client: Client, message: Message):
             if message_counts[user_id]["count"] >= 6:
                 blocklist[user_id] = current_time + timedelta(minutes=1)
                 message_counts.pop(user_id, None)
-                await message.reply_text(f"**Hey, {message.from_user.mention} ✨**\n\n**Tum thodi der ke liye block ho gaye ho spamming ke chakkar mein! 1 minute baad aana 🥺🎀**")
+                await message.reply_text(f"**Uff {username} ✨**\n\n**Tum kitna spam karte ho yaar! 1 minute ke liye chup raho ab 🥺🎀**")
                 return
 
         # Ignore Commands
@@ -145,20 +190,32 @@ async def chatbot_response(client: Client, message: Message):
         is_name_called = "kiyomi" in msg_text
         
         if is_disabled:
-            # Agar bot DISABLED hai: Toh usko chup rehna chahiye, UNLESS koi directly trigger kare
             if not (is_private or is_reply_to_bot or is_name_called):
                 return
-        # Agar bot ENABLED hai: Toh ye "if" ignore ho jayega aur wo group ke har message ka reply degi
 
-        # Main AI Reply Logic
+        # 🎯 STICKER PE STICKER LOGIC 🎯
+        if message.sticker:
+            await save_new_sticker(message.sticker.file_id) # Learn the sticker silently
+            
+            # Agar bot se baat kar raha hai toh reply degi
+            if is_private or is_reply_to_bot:
+                await client.send_chat_action(chat_id, ChatAction.CHOOSE_STICKER)
+                sticker_to_send = await get_random_sticker()
+                
+                if sticker_to_send:
+                    await message.reply_sticker(sticker_to_send)
+                else:
+                    await message.reply_text(f"**Aww {username}, kitna cute sticker hai! ✨🎀**")
+            return # Yahan ruk jao taaki AI text na bheje
+
+        # Main AI Text Reply Logic
         if message.text:
             await client.send_chat_action(chat_id, ChatAction.TYPING)
             
-            # Creating a Unique Memory ID for Group + User isolation
             memory_id = f"{chat_id}:{user_id}"
             
-            # Fetching Kiyomi's response with Name Recognition
-            response_text = await get_openrouter_reply(memory_id, message.text, user_name)
+            # Fetching Kiyomi's pure girl response
+            response_text = await get_openrouter_reply(memory_id, message.text, user_name, username, is_owner)
             
             # Chat language translation logic
             chat_lang = await get_chat_language(chat_id)
@@ -172,7 +229,9 @@ async def chatbot_response(client: Client, message: Message):
             await message.reply_text(translated_text)
             
         else:
-            await message.reply_text("**Main abhi sirf cute cute text messages padh sakti hoon! ✨🎀**")
+            # Agar text/sticker ke alawa photo/video aaye
+            if is_private or is_reply_to_bot:
+                await message.reply_text(f"**Main abhi sirf cute cute baatein padh sakti hoon {username}! ✨🎀**")
 
     except MessageEmpty:
         await message.reply_text("**🙄🙄**")
@@ -188,5 +247,4 @@ async def close_session_on_disconnect(client: Client):
         await http_session.close()
         LOGGER.info("Kiyomi's OpenRouter API Session closed safely.")
 
-# Adding the handler safely using Pyrogram's built-in DisconnectHandler
 RISHUCHATBOT.add_handler(DisconnectHandler(close_session_on_disconnect))
