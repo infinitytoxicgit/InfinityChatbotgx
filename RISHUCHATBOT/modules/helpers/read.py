@@ -15,7 +15,7 @@ START = """**
 
 
 ╔═══⋆ʟᴏᴠᴇ ᴡɪᴛʜ⋆═══╗
-𝙆𝙞𝙮𝙤𝙢𝙞 𓆩ꨄ︎𓆪(https://t.me/+xbiKouVo7xBmMTNi)
+[𝙆𝙞𝙮𝙤𝙢𝙞 𓆩ꨄ︎𓆪](https://t.me/Roohi_Queen_Bot?start=_tgr_yN-6yUs4ZmRh)
 ╚═════ ⋆★⋆ ═════╝
 **"""
 
@@ -46,7 +46,7 @@ TOOLS_DATA_READ = f"""**
 
 
 ╔═══⋆ʟᴏᴠᴇ ᴡɪᴛʜ⋆═══╗
-𝙆𝙞𝙮𝙤𝙢𝙞 𓆩ꨄ︎𓆪(https://t.me/+xbiKouVo7xBmMTNi)
+[𝙆𝙞𝙮𝙤𝙢𝙞 𓆩ꨄ︎𓆪](https://t.me/+xbiKouVo7xBmMTNi)
 ╚═════ ⋆★⋆ ═════╝ **
 """
 
@@ -74,7 +74,7 @@ CHATBOT_READ = f"""**
 
 
 ╔═══⋆ʟᴏᴠᴇ ᴡɪᴛʜ⋆═══╗
-𝙆𝙞𝙮𝙤𝙢𝙞 𓆩ꨄ︎𓆪(https://t.me/+xbiKouVo7xBmMTNi)
+[𝙆𝙞𝙮𝙤𝙢𝙞 𓆩ꨄ︎𓆪](https://t.me/+xbiKouVo7xBmMTNi)
 ╚═════ ⋆★⋆ ═════╝**
 """
 
