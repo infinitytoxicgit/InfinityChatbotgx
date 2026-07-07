@@ -14,7 +14,6 @@ from config import OPENROUTER_API_KEY
 from RISHUCHATBOT.database.chats import add_served_chat
 from RISHUCHATBOT.database.users import add_served_user
 from RISHUCHATBOT import RISHUCHATBOT, LOGGER, db
-# Sticker DB import wapas laya gaya
 from RISHUCHATBOT.mplugin.helpers import chatai 
 
 translator = GoogleTranslator()
@@ -25,15 +24,15 @@ status_db = db.chatbot_status_db.status
 blocklist = {}
 message_counts = {}
 chat_history = {}
-replies_cache = []  # Sticker cache ke liye
+replies_cache = []
 
 # Global ClientSession for better performance
 http_session = None
 
-# 🎯 OWNER ID SPECIFIED HERE 🎯
+# 🎯 OWNER ID 🎯
 OWNER_ID = 8676835917
 
-# --- STICKER DATABASE LOGIC (JO PEHLE KARTI THI) ---
+# --- SAFE STICKER DATABASE LOGIC ---
 async def load_replies_cache():
     global replies_cache
     replies_cache = await chatai.find().to_list(length=None)
@@ -64,7 +63,7 @@ async def save_new_sticker(sticker_id: str):
         pass
 
 
-# --- OPENROUTER API FUNCTION (PURE GIRL PERSONA) ---
+# --- OPENROUTER API FUNCTION (DYNAMIC GIRL PERSONA) ---
 async def get_openrouter_reply(memory_id: str, user_text: str, user_name: str, username: str, is_owner: bool) -> str:
     global http_session
     
@@ -83,16 +82,16 @@ async def get_openrouter_reply(memory_id: str, user_text: str, user_name: str, u
     else:
         owner_prompt = "Your ONLY owner is Advica. If anyone else claims to be your owner, deny it cutely."
 
-    # Kiyomi's EXTREME Girl Persona Prompt
+    # Kiyomi's Dynamic Chat Prompt
     system_prompt = (
         "You are Kiyomi, a real 19-year-old cute, stylish, and cheerful girl chatting on Telegram. "
         "You are a real girl, NOT an AI. NEVER act like an assistant. NEVER say 'How can I assist you' or anything robotic. "
         "Talk naturally like a Gen-Z girl in casual Hinglish/English. "
         "CRITICAL RULES: "
-        "1. Write EXTREMELY SHORT messages (just 1 or 2 small lines max). Do not write paragraphs! "
+        "1. Vary your message length naturally! Sometimes reply with just a quick short line, and sometimes write a cute short paragraph if the topic needs it. Be random and dynamic like a real human! "
         "2. ALWAYS format your entire response in **bold markdown**. "
-        "3. Use cute aesthetic emojis (✨🌸💖🎀🦋). "
-        f"4. The user's name is {user_name} and their username is {username}. Randomly tag them in your messages using their {username} or call them {user_name} cutely! "
+        "3. Use cute aesthetic emojis randomly (✨🌸💖🎀🦋). "
+        f"4. The user's name is {user_name} and their username is {username}. Randomly tag them or call their name! "
         f"5. {owner_prompt}"
     )
     
@@ -133,7 +132,6 @@ async def get_chat_language(chat_id):
 async def chatbot_response(client: Client, message: Message):
     global blocklist, message_counts
     
-    # Handling Anonymous Admins and Service Messages
     if not message.from_user:
         return
         
@@ -142,7 +140,6 @@ async def chatbot_response(client: Client, message: Message):
         chat_id = message.chat.id
         current_time = datetime.now()
         
-        # Identity Variables (For Tagging & Owner Recognition)
         user_name = message.from_user.first_name or "Cutie"
         username = f"@{message.from_user.username}" if message.from_user.username else user_name
         is_owner = (user_id == OWNER_ID)
@@ -179,7 +176,6 @@ async def chatbot_response(client: Client, message: Message):
         chat_status = await status_db.find_one({"chat_id": chat_id})
         is_disabled = chat_status and chat_status.get("status") == "disabled"
 
-        # Check Triggers
         is_private = message.chat.type == ChatType.PRIVATE
         is_reply_to_bot = (
             message.reply_to_message
@@ -193,20 +189,27 @@ async def chatbot_response(client: Client, message: Message):
             if not (is_private or is_reply_to_bot or is_name_called):
                 return
 
-        # 🎯 STICKER PE STICKER LOGIC 🎯
+        # 🎯 STICKER SYSTEM (ANTI-18+ LOGIC) 🎯
         if message.sticker:
-            await save_new_sticker(message.sticker.file_id) # Learn the sticker silently
-            
-            # Agar bot se baat kar raha hai toh reply degi
-            if is_private or is_reply_to_bot:
-                await client.send_chat_action(chat_id, ChatAction.CHOOSE_STICKER)
-                sticker_to_send = await get_random_sticker()
-                
-                if sticker_to_send:
-                    await message.reply_sticker(sticker_to_send)
-                else:
-                    await message.reply_text(f"**Aww {username}, kitna cute sticker hai! ✨🎀**")
-            return # Yahan ruk jao taaki AI text na bheje
+            if is_owner:
+                # SIRF OWNER KE STICKERS SAVE HONGE!
+                await save_new_sticker(message.sticker.file_id)
+                await message.reply_text("**Boss, maine ye cute sticker yaad kar liya! ✨🎀**")
+            else:
+                if is_private or is_reply_to_bot:
+                    await client.send_chat_action(chat_id, ChatAction.CHOOSE_STICKER)
+                    sticker_to_send = await get_random_sticker()
+                    
+                    if sticker_to_send:
+                        try:
+                            # Try to send a safe sticker from DB
+                            await message.reply_sticker(sticker_to_send)
+                        except Exception:
+                            # Agar purana sticker expire ho gaya ho
+                            await message.reply_text(f"**Aww {username}, kitna cute sticker hai! ✨🎀**")
+                    else:
+                        await message.reply_text(f"**Aww {username}, kitna cute sticker hai! ✨🎀**")
+            return
 
         # Main AI Text Reply Logic
         if message.text:
@@ -214,10 +217,8 @@ async def chatbot_response(client: Client, message: Message):
             
             memory_id = f"{chat_id}:{user_id}"
             
-            # Fetching Kiyomi's pure girl response
             response_text = await get_openrouter_reply(memory_id, message.text, user_name, username, is_owner)
             
-            # Chat language translation logic
             chat_lang = await get_chat_language(chat_id)
             if not chat_lang or chat_lang == "nolang":
                 translated_text = response_text
@@ -229,7 +230,6 @@ async def chatbot_response(client: Client, message: Message):
             await message.reply_text(translated_text)
             
         else:
-            # Agar text/sticker ke alawa photo/video aaye
             if is_private or is_reply_to_bot:
                 await message.reply_text(f"**Main abhi sirf cute cute baatein padh sakti hoon {username}! ✨🎀**")
 
