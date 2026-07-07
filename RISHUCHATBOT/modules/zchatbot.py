@@ -63,7 +63,7 @@ async def save_new_sticker(sticker_id: str):
         pass
 
 
-# --- OPENROUTER API FUNCTION (DYNAMIC GIRL PERSONA WITH FALLBACK MODELS & ERROR TRACKING) ---
+# --- OPENROUTER API FUNCTION (DYNAMIC GIRL PERSONA WITH SUPER ERROR TRACKING) ---
 async def get_openrouter_reply(memory_id: str, user_text: str, user_name: str, username: str, is_owner: bool) -> str:
     global http_session
 
@@ -104,14 +104,14 @@ async def get_openrouter_reply(memory_id: str, user_text: str, user_name: str, u
     if len(chat_history[memory_id]) > 11:
         chat_history[memory_id] = [chat_history[memory_id][0]] + chat_history[memory_id][-10:]
 
-    # 🔥 FIX: Hata diya purana dead model. Sirf Top 3 100% Working Models rakhe hain 🔥
+    # 🔥 FIX: 3 LATEST & 100% WORKING FREE MODELS 🔥
     models_to_try = [
-        "meta-llama/llama-3-8b-instruct:free", 
-        "google/gemma-2-9b-it:free",           
-        "mistralai/mistral-7b-instruct:free"  
+        "google/gemma-2-9b-it:free",             # Primary: Sabse stable Hinglish ke liye
+        "meta-llama/llama-3.1-8b-instruct:free", # Backup 1: Latest Llama 3.1
+        "qwen/qwen-2-7b-instruct:free"           # Backup 2: Super fast
     ]
     
-    last_error = "Unknown Connection Error"
+    error_logs = ""
 
     for model_name in models_to_try:
         data = {
@@ -128,16 +128,24 @@ async def get_openrouter_reply(memory_id: str, user_text: str, user_name: str, u
                     chat_history[memory_id].append({"role": "assistant", "content": reply})
                     return reply
                 else:
+                    # Catching exact errors for EVERY model
                     err_text = await response.text()
                     LOGGER.warning(f"Model {model_name} failed. Status: {response.status}. Error: {err_text}")
-                    last_error = f"Status {response.status}: {err_text[:100]}"
+                    
+                    error_logs += f"\n❌ `{model_name}` -> **Status {response.status}**"
+                    if response.status == 401:
+                        error_logs += " *(API Key Galat Ya Expire ho gayi hai!)*"
+                    elif response.status == 429:
+                        error_logs += " *(Free limit khatam ya server busy hai)*"
+                        
                     continue 
         except Exception as e:
             LOGGER.error(f"Error with model {model_name}: {e}")
-            last_error = str(e)
+            error_logs += f"\n❌ `{model_name}` -> **Connection Error**"
             continue 
 
-    return f"**Bhai, error pakda gaya! Yeh check karo:**\n`{last_error}`\n\n**Apni config.py mein OPENROUTER_API_KEY verify karo!**"
+    # Agar saare models fail ho gaye, toh list aayegi
+    return f"**Bhai, kuch toh gadbad hai! Yeh dekho models kyun fail ho rahe hain:**\n{error_logs}\n\n**Apni config.py mein OPENROUTER_API_KEY dhyan se check karo!**"
 
 
 async def get_chat_language(chat_id):
