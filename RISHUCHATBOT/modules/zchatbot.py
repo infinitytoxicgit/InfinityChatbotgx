@@ -104,12 +104,13 @@ async def get_openrouter_reply(memory_id: str, user_text: str, user_name: str, u
     if len(chat_history[memory_id]) > 11:
         chat_history[memory_id] = [chat_history[memory_id][0]] + chat_history[memory_id][-10:]
 
-    # 🔥 FIX: 3 LATEST & 100% WORKING FREE MODELS 🔥
+        # 🔥 FIX: 100% WORKING & NEVER-EXPIRING FREE ROLEPLAY MODELS 🔥
     models_to_try = [
-        "google/gemma-2-9b-it:free",             # Primary: Sabse stable Hinglish ke liye
-        "meta-llama/llama-3.1-8b-instruct:free", # Backup 1: Latest Llama 3.1
-        "qwen/qwen-2-7b-instruct:free"           # Backup 2: Super fast
+        "meta-llama/llama-3-8b-instruct:free", # Wapas original Llama 3 (yeh pehle chal raha tha)
+        "gryphe/mythomax-l2-13b:free",         # Roleplay/Chat ka sabse king model (Hamesha free)
+        "undi95/toppy-m-7b:free"               # Ek aur super stable aur fast free model
     ]
+
     
     error_logs = ""
 
