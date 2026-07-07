@@ -14,6 +14,7 @@ MONGO_URL = getenv(
     "MONGO_URL",
     "mongodb+srv://knight4563:knight4563@cluster0.a5br0se.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 )
+OPENROUTER_API_KEY = getenv("OPENROUTER_API_KEY", "")
 OWNER_ID = int(getenv("OWNER_ID", "8564072723"))
 SUPPORT_GRP = "https://t.me/+xWR1TL_g_VMzZTcy"
 UPDATE_CHNL = "@Roohi_Soul"
