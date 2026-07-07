@@ -104,13 +104,12 @@ async def get_openrouter_reply(memory_id: str, user_text: str, user_name: str, u
     if len(chat_history[memory_id]) > 11:
         chat_history[memory_id] = [chat_history[memory_id][0]] + chat_history[memory_id][-10:]
 
-        # 🔥 FIX: 100% WORKING & NEVER-EXPIRING FREE ROLEPLAY MODELS 🔥
+    # 🔥 FIX: LATEST GEMINI, KIMI (Moonshot), & QWEN LOOP 🔥
     models_to_try = [
-        "meta-llama/llama-3-8b-instruct:free", # Wapas original Llama 3 (yeh pehle chal raha tha)
-        "gryphe/mythomax-l2-13b:free",         # Roleplay/Chat ka sabse king model (Hamesha free)
-        "undi95/toppy-m-7b:free"               # Ek aur super stable aur fast free model
+        "google/gemini-2.0-flash-exp:free", # Primary: Gemini 2.0 Flash (Fastest & Smartest)
+        "moonshotai/moonshot-v1-8k",        # Backup 1: Kimi / Moonshot (Super intelligent)
+        "qwen/qwen-2.5-72b-instruct:free"   # Backup 2: Qwen 2.5 72B (Powerful & Free)
     ]
-
     
     error_logs = ""
 
@@ -129,7 +128,6 @@ async def get_openrouter_reply(memory_id: str, user_text: str, user_name: str, u
                     chat_history[memory_id].append({"role": "assistant", "content": reply})
                     return reply
                 else:
-                    # Catching exact errors for EVERY model
                     err_text = await response.text()
                     LOGGER.warning(f"Model {model_name} failed. Status: {response.status}. Error: {err_text}")
                     
@@ -145,7 +143,7 @@ async def get_openrouter_reply(memory_id: str, user_text: str, user_name: str, u
             error_logs += f"\n❌ `{model_name}` -> **Connection Error**"
             continue 
 
-    # Agar saare models fail ho gaye, toh list aayegi
+    # Agar saare models fail ho gaye
     return f"**Bhai, kuch toh gadbad hai! Yeh dekho models kyun fail ho rahe hain:**\n{error_logs}\n\n**Apni config.py mein OPENROUTER_API_KEY dhyan se check karo!**"
 
 
@@ -228,10 +226,8 @@ async def chatbot_response(client: Client, message: Message):
 
                     if sticker_to_send:
                         try:
-                            # Try to send a safe sticker from DB
                             await message.reply_sticker(sticker_to_send)
                         except Exception:
-                            # Agar purana sticker expire ho gaya ho
                             await message.reply_text(f"**Aww {username}, kitna cute sticker hai! ✨🎀**")
                     else:
                         await message.reply_text(f"**Aww {username}, kitna cute sticker hai! ✨🎀**")
