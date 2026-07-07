@@ -105,7 +105,7 @@ async def get_openrouter_reply(memory_id: str, user_text: str, user_name: str, u
         chat_history[memory_id] = [chat_history[memory_id][0]] + chat_history[memory_id][-10:]
     
     data = {
-        "model": "openai/gpt-3.5-turbo", 
+        "model": "openrouter/free", 
         "messages": chat_history[memory_id]
     }
     
